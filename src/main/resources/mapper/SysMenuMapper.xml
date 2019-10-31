@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sdh.dao.SysMenuDao">
+
+    <select id="querySysMenuByUsername" resultType="com.sdh.vo.UserMenu">
+        select sys_menu.menu_id,sys_menu.parent_id,sys_menu.`name`,sys_menu.url,sys_menu.perms,sys_menu.type,sys_menu.icon,sys_menu.order_num
+			from sys_user
+		join sys_user_role on sys_user.user_id=sys_user_role.user_id
+		join sys_role on sys_role.role_id=sys_user_role.role_id
+		join sys_role_menu on sys_role.role_id=sys_role_menu.role_id
+		join sys_menu on sys_menu.menu_id = sys_role_menu.menu_id
+			where sys_user.username=#{username} and sys_menu.parent_id=#{id}
+    </select>
+
+    <select id="querySysMenuList" resultType="com.sdh.pojo.SysMenu">
+		select * from sys_menu
+	</select>
+	<select id="getMenuCount" resultType="java.lang.Integer">
+		select count(*) from sys_menu
+	</select>
+	<select id="querySysMenuPage" resultType="com.sdh.pojo.SysMenu">
+        select * from sys_menu order by sys_menu.menu_id ${order} limit #{offset},#{limit}
+	</select>
+	
+	<!--<resultMap id="menu" type="com.sdh.pojo.SysMenu" autoMapping="true">
+		<id property="menuId" column="menu_id"></id>
+		<collection property="" javaType="" ofType="">
+
+		</collection>
+	</resultMap>-->
+
+	<!-- 菜单查询优化 -->
+	<select id="querySysMenuByUsernameAndType" resultType="com.sdh.vo.UserMenu">
+		SELECT DISTINCT m.menu_id,m.name,m.parent_id,m.url,m.icon,m.type,m2.menu_id menu_id2,m2.name name2,m2.parent_id parent_id2,m2.url url2,m2.icon icon2,m2.type type2
+			FROM sys_user u
+			INNER JOIN sys_user_role ur
+			on u.user_id = ur.user_id
+			INNER JOIN sys_role r
+			on ur.role_id = r.role_id
+			INNER JOIN sys_role_menu rm
+			on r.role_id = rm.role_id
+			inner JOIN sys_menu m
+			on rm.menu_id = m.menu_id
+			 inner JOIN sys_menu m2
+			on m.menu_id = m2.parent_id
+			where m.type=#{type} and username=#{username}
+	</select>
+
+</mapper>
